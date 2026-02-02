@@ -3,43 +3,72 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>???</title>
+<title>404… czy nie?</title>
 <style>
     body {
-        background: black;
-        color: #0f0;
-        font-family: 'Courier New', monospace;
-        overflow: hidden;
         margin: 0;
         height: 100vh;
+        background: #ffffff;
+        color: rgb(0, 0, 0);
+        font-family: 'Courier New', monospace;
+        overflow: hidden;
         display: flex;
         justify-content: center;
         align-items: center;
         flex-direction: column;
     }
+
     .glitch {
-        font-size: 3em;
+        font-size: 10em;
         position: relative;
         animation: glitch 1s infinite;
     }
+
     @keyframes glitch {
         0% { left: 0px; top: 0px; }
-        20% { left: 2px; top: -2px; }
-        40% { left: -2px; top: 2px; }
-        60% { left: 2px; top: 2px; }
-        80% { left: -2px; top: -2px; }
+        20% { left: 5px; top: -2px; }
+        40% { left: -3px; top: 3px; }
+        60% { left: 2px; top: -3px; }
+        80% { left: -2px; top: 2px; }
         100% { left: 0px; top: 0px; }
     }
-    p {
-        margin-top: 20px;
-        font-size: 1.2em;
-        color: #0f0;
+
+    .code {
+        font-size: 6em;
         opacity: 0.7;
+        white-space: pre;
+        max-width: 80%;
+        text-align: left;
+        animation: flicker 0.5s infinite;
+    }
+
+    @keyframes flicker {
+        0%, 50%, 100% { opacity: 0.7; }
+        25%, 75% { opacity: 0.3; }
     }
 </style>
 </head>
 <body>
-    <div class="glitch">███████</div>
-    <p>Coś tu jest… ale czy naprawdę?</p>
+    <div class="glitch">NIGGER</div>
+    <div class="code" id="code"></div>
+
+<script>
+    const lines = [
+        "NIGGER",
+    ];
+
+    const codeEl = document.getElementById('code');
+
+    function randomLine() {
+        return lines[Math.floor(Math.random() * lines.length)];
+    }
+
+    function addLine() {
+        codeEl.textContent += randomLine() + "\n";
+        codeEl.scrollTop = codeEl.scrollHeight;
+    }
+
+    setInterval(addLine, 30);
+</script>
 </body>
 </html>
