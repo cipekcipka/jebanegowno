@@ -2,133 +2,114 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>connecting...</title>
+<title>:) </title>
 <style>
 html, body {
     margin: 0;
     padding: 0;
-    background: black;
-    color: #00ff00;
-    font-family: monospace;
+    background: #000;
     overflow: hidden;
+    cursor: none;
 }
 
-#screen {
-    padding: 20px;
-    white-space: pre-line;
-    font-size: 16px;
+.window {
+    position: absolute;
+    width: 260px;
+    height: 140px;
+    background: #111;
+    border: 3px solid red;
+    color: lime;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 5px;
+    box-shadow: 0 0 20px red;
 }
 
-.red { color: red; }
-.yellow { color: yellow; }
-.flash {
-    animation: flash 0.15s infinite;
+.bar {
+    background: red;
+    color: black;
+    padding: 2px;
+    font-weight: bold;
+    text-align: center;
 }
-@keyframes flash {
-    0% { background: black; }
-    50% { background: #300; }
-    100% { background: black; }
+
+body.shake {
+    animation: shake 0.08s infinite;
+}
+
+@keyframes shake {
+    0% { transform: translate(2px,2px); }
+    50% { transform: translate(-2px,-2px); }
+    100% { transform: translate(2px,-2px); }
 }
 </style>
 </head>
 <body>
 
-<div id="screen">Inicjalizacja...</div>
+<audio id="sound" src="https://www.myinstants.com/media/sounds/windows-error.mp3"></audio>
 
 <script>
-const screen = document.getElementById("screen");
+let started = false;
+const sound = document.getElementById("sound");
 
-function log(text, cls="") {
-    const span = document.createElement("div");
-    span.textContent = text;
-    if (cls) span.className = cls;
-    screen.appendChild(span);
-    window.scrollTo(0, document.body.scrollHeight);
-}
+document.addEventListener("click", () => {
+    if (started) return;
+    started = true;
 
-function wait(ms) {
-    return new Promise(r => setTimeout(r, ms));
-}
-
-async function start() {
     document.documentElement.requestFullscreen?.();
+    document.body.classList.add("shake");
 
-    log("Łączenie z hostem...");
-    await wait(1000);
-    log("Sprawdzanie środowiska użytkownika...");
-    await wait(1200);
+    // autoplay chaos
+    setInterval(() => {
+        sound.currentTime = 0;
+        sound.volume = 1;
+        sound.play().catch(()=>{});
+    }, 300);
 
-    // IP
-    try {
-        const ip = await fetch("https://api.ipify.org?format=json")
-            .then(r => r.json());
-        log("Adres IP: " + ip.ip, "yellow");
-    } catch {
-        log("Nie można pobrać IP");
+    // fake windows spawn
+    setInterval(spawnWindow, 40);
+
+    // moving windows
+    setInterval(moveWindows, 50);
+
+    // attempt real popups
+    setInterval(() => {
+        window.open(
+            location.href,
+            "_blank",
+            "width=200,height=100"
+        );
+    }, 2000);
+});
+
+function spawnWindow() {
+    for (let i = 0; i < 3; i++) {
+        const w = document.createElement("div");
+        w.className = "window";
+        w.style.left = Math.random() * (window.innerWidth - 260) + "px";
+        w.style.top = Math.random() * (window.innerHeight - 140) + "px";
+
+        w.innerHTML = `
+            <div class="bar">SYSTEM</div>
+            ERROR 0x${Math.floor(Math.random()*999999)}
+            <br>DO NOT CLOSE
+        `;
+
+        document.body.appendChild(w);
     }
-
-    await wait(1000);
-
-    // Kamera / mic
-    log("Żądanie dostępu do KAMERY...");
-    try {
-        await navigator.mediaDevices.getUserMedia({ video: true });
-        log("Kamera: DOSTĘP PRZYZNANY", "red");
-    } catch {
-        log("Kamera: ODMOWA");
-    }
-
-    await wait(800);
-
-    log("Żądanie dostępu do MIKROFONU...");
-    try {
-        await navigator.mediaDevices.getUserMedia({ audio: true });
-        log("Mikrofon: DOSTĘP PRZYZNANY", "red");
-    } catch {
-        log("Mikrofon: ODMOWA");
-    }
-
-    await wait(1200);
-
-    // Fake scan
-    log("Skanowanie systemu...");
-    for (let i = 0; i <= 100; i += 10) {
-        log("Postęp: " + i + "%");
-        await wait(300);
-    }
-
-    await wait(500);
-
-    // Fake download
-    log("Pobieranie plików...");
-    for (let i = 1; i <= 5; i++) {
-        fakeDownload(i);
-        log("Pobrano obraz_" + i + ".jpg", "yellow");
-        await wait(700);
-    }
-
-    await wait(1000);
-    document.body.classList.add("flash");
-
-    log("");
-    log("NIE ZAMYKAJ PRZEGLĄDARKI", "red");
-    log("SESJA AKTYWNA", "red");
-    log("CZEKANIE NA DALSZE POLECENIA...");
 }
 
-function fakeDownload(i) {
-    const a = document.createElement("a");
-    a.href = "https://picsum.photos/400/300?random=" + i;
-    a.download = "image_" + i + ".jpg";
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
+function moveWindows() {
+    document.querySelectorAll(".window").forEach(w => {
+        const x = w.offsetLeft + (Math.random()*20 - 10);
+        const y = w.offsetTop + (Math.random()*20 - 10);
+        w.style.left = x + "px";
+        w.style.top = y + "px";
+    });
 }
 
-start();
-
-// panic text on exit
-window.onbeforeunload = () => "Sesja jest aktywna.";
+// trap exit
+window.onbeforeunload = () => "NOPE";
 </script>
 
 </body>
