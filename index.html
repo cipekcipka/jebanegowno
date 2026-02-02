@@ -1,160 +1,90 @@
-<!DOCTYPE html>
-<html lang="pl">
-<head>
-<meta charset="UTF-8">
-<title>:)</title>
-<style>
-html, body {
-    margin: 0;
-    padding: 0;
-    background: black;
-    overflow: hidden;
+// --- SETTINGS ---
+const NUM_PARTICLES = 150; // liczba latających elementów
+const AUDIO_FILES = [
+  'media/audio/bird1.mp3',
+  'media/audio/bird2.mp3',
+  'media/audio/bird3.mp3'
+];
+const ART = ['🐦','🦉','🦆','🦢','🦜'];
+const SCREEN_WIDTH = window.innerWidth;
+const SCREEN_HEIGHT = window.innerHeight;
+
+// --- CREATE FLYING ELEMENTS ---
+const particles = [];
+
+for(let i=0;i<NUM_PARTICLES;i++){
+    const el = document.createElement('div');
+    el.innerText = getRandomArrayEntry(ART);
+    el.style.position = 'fixed';
+    el.style.left = Math.random()*SCREEN_WIDTH+'px';
+    el.style.top = Math.random()*SCREEN_HEIGHT+'px';
+    el.style.fontSize = 20 + Math.random()*40 + 'px';
+    el.style.zIndex = 9999;
+    document.body.appendChild(el);
+
+    particles.push({
+        el,
+        vx: (Math.random()-0.5)*15,
+        vy: (Math.random()-0.5)*15,
+    });
 }
 
-#start {
-    position: fixed;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    color: red;
-    font-family: monospace;
-    font-size: 48px;
-    text-align: center;
-    animation: blink 0.6s infinite;
-    z-index: 9999;
+// --- ANIMATE ELEMENTS ---
+function animateParticles(){
+    particles.forEach(p => {
+        let x = parseFloat(p.el.style.left);
+        let y = parseFloat(p.el.style.top);
+
+        x += p.vx;
+        y += p.vy;
+
+        if(x<0||x>SCREEN_WIDTH-50)p.vx*=-1;
+        if(y<0||y>SCREEN_HEIGHT-50)p.vy*=-1;
+
+        p.el.style.left = x+'px';
+        p.el.style.top = y+'px';
+    });
+    requestAnimationFrame(animateParticles);
 }
+animateParticles();
 
-#start small {
-    font-size: 20px;
-    color: white;
-    margin-top: 20px;
+// --- RANDOM AUDIO ---
+function playRandomSound(){
+    const audio = new Audio(getRandomArrayEntry(AUDIO_FILES));
+    audio.volume = 1;
+    audio.play().catch(()=>{}); // ignoruj bledy autoplay
 }
+setInterval(playRandomSound, 800);
 
-@keyframes blink {
-    0% { opacity: 1; }
-    50% { opacity: 0.2; }
-    100% { opacity: 1; }
+// --- RAINBOW BACKGROUND ---
+function rainbowBackground(){
+    document.body.style.backgroundColor = '#'+Math.floor(Math.random()*16777215).toString(16);
 }
+setInterval(rainbowBackground, 100);
 
-body.shake {
-    animation: shake 0.05s infinite;
+// --- SHAKE EFFECT ---
+function shakeBody(){
+    document.body.style.transform = `translate(${(Math.random()-0.5)*20}px, ${(Math.random()-0.5)*20}px)`;
 }
+setInterval(shakeBody, 50);
 
-@keyframes shake {
-    0% { transform: translate(4px, -4px); }
-    25% { transform: translate(-4px, 4px); }
-    50% { transform: translate(4px, 4px); }
-    75% { transform: translate(-4px, -4px); }
-    100% { transform: translate(4px, -4px); }
+// --- CLIPBOARD SPAM ---
+const spamText = 'Zostałeś zptoszkowany!!1 '.repeat(200);
+navigator.clipboard.writeText(spamText).catch(()=>{});
+
+// --- TEXT-TO-SPEECH ---
+const phrases = [
+    "Hello, my name is ptoszek!",
+    "Birds are funny!",
+    "Zostałeś zptoszkowany!"
+];
+function speakRandom(){
+    const msg = new SpeechSynthesisUtterance(getRandomArrayEntry(phrases));
+    window.speechSynthesis.speak(msg);
 }
+setInterval(speakRandom, 5000);
 
-.win {
-    position: absolute;
-    width: 200px;
-    height: 110px;
-    background: #111;
-    border: 3px solid red;
-    color: lime;
-    font-family: monospace;
-    font-size: 13px;
-    padding: 4px;
-    box-shadow: 0 0 25px red;
-    user-select: none;
-    z-index: 10;
+// --- UTILS ---
+function getRandomArrayEntry(arr){
+    return arr[Math.floor(Math.random()*arr.length)];
 }
-.bar {
-    background: red;
-    color: black;
-    font-weight: bold;
-    text-align: center;
-}
-</style>
-</head>
-<body>
-
-<div id="start">
-    CLICK ANYWHERE
-    <small>do not close • do not refresh</small>
-</div>
-
-<script>
-let started = false;
-let ctx;
-const windows = [];
-
-document.addEventListener("click", () => {
-    if (started) return;
-    started = true;
-
-    document.getElementById("start").remove();
-
-    document.body.classList.add("shake");
-    document.documentElement.requestFullscreen?.();
-
-    ctx = new (window.AudioContext || window.webkitAudioContext)();
-
-    setInterval(spawnWindows, 120);
-    setInterval(update, 16);
-});
-
-function spawnWindows() {
-    for (let i = 0; i < 4; i++) {
-        const div = document.createElement("div");
-        div.className = "win";
-        div.innerHTML = `
-            <div class="bar">SYSTEM</div>
-            ERROR ${Math.floor(Math.random()*999999)}
-        `;
-
-        const obj = {
-            el: div,
-            x: Math.random() * (window.innerWidth - 200),
-            y: Math.random() * (window.innerHeight - 110),
-            vx: (Math.random()*14 + 6) * (Math.random()<0.5?-1:1),
-            vy: (Math.random()*14 + 6) * (Math.random()<0.5?-1:1),
-            osc: createSound()
-        };
-
-        windows.push(obj);
-        document.body.appendChild(div);
-    }
-}
-
-function createSound() {
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-
-    osc.type = ["sawtooth","square","triangle"][Math.floor(Math.random()*3)];
-    osc.frequency.value = 150 + Math.random()*3000;
-    gain.gain.value = 0.2 + Math.random()*0.3;
-
-    osc.connect(gain).connect(ctx.destination);
-    osc.start();
-
-    setInterval(() => {
-        osc.frequency.value = 80 + Math.random()*4000;
-    }, 150 + Math.random()*300);
-
-    return osc;
-}
-
-function update() {
-    for (const w of windows) {
-        w.x += w.vx;
-        w.y += w.vy;
-
-        if (w.x < 0 || w.x > window.innerWidth - 200) w.vx *= -1;
-        if (w.y < 0 || w.y > window.innerHeight - 110) w.vy *= -1;
-
-        w.el.style.left = w.x + "px";
-        w.el.style.top = w.y + "px";
-    }
-}
-
-window.onbeforeunload = () => "NOPE";
-</script>
-
-</body>
-</html>
