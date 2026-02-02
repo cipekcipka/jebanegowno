@@ -2,113 +2,121 @@
 <html lang="pl">
 <head>
 <meta charset="UTF-8">
-<title>:) </title>
+<title>:)</title>
 <style>
 html, body {
     margin: 0;
     padding: 0;
-    background: #000;
+    background: black;
     overflow: hidden;
-    cursor: none;
 }
 
-.window {
+body.shake {
+    animation: shake 0.05s infinite;
+}
+
+@keyframes shake {
+    0% { transform: translate(4px, -4px); }
+    25% { transform: translate(-4px, 4px); }
+    50% { transform: translate(4px, 4px); }
+    75% { transform: translate(-4px, -4px); }
+    100% { transform: translate(4px, -4px); }
+}
+
+.win {
     position: absolute;
-    width: 260px;
-    height: 140px;
+    width: 180px;
+    height: 100px;
     background: #111;
     border: 3px solid red;
     color: lime;
     font-family: monospace;
-    font-size: 14px;
-    padding: 5px;
-    box-shadow: 0 0 20px red;
+    font-size: 13px;
+    padding: 4px;
+    box-shadow: 0 0 25px red;
+    user-select: none;
 }
-
 .bar {
     background: red;
     color: black;
-    padding: 2px;
     font-weight: bold;
     text-align: center;
-}
-
-body.shake {
-    animation: shake 0.08s infinite;
-}
-
-@keyframes shake {
-    0% { transform: translate(2px,2px); }
-    50% { transform: translate(-2px,-2px); }
-    100% { transform: translate(2px,-2px); }
 }
 </style>
 </head>
 <body>
 
-<audio id="sound" src="https://www.myinstants.com/media/sounds/windows-error.mp3"></audio>
-
 <script>
 let started = false;
-const sound = document.getElementById("sound");
+let ctx;
+const windows = [];
 
 document.addEventListener("click", () => {
     if (started) return;
     started = true;
 
-    document.documentElement.requestFullscreen?.();
     document.body.classList.add("shake");
+    document.documentElement.requestFullscreen?.();
 
-    // autoplay chaos
-    setInterval(() => {
-        sound.currentTime = 0;
-        sound.volume = 1;
-        sound.play().catch(()=>{});
-    }, 300);
+    ctx = new (window.AudioContext || window.webkitAudioContext)();
 
-    // fake windows spawn
-    setInterval(spawnWindow, 40);
-
-    // moving windows
-    setInterval(moveWindows, 50);
-
-    // attempt real popups
-    setInterval(() => {
-        window.open(
-            location.href,
-            "_blank",
-            "width=200,height=100"
-        );
-    }, 2000);
+    setInterval(spawnWindows, 120);
+    setInterval(update, 16);
 });
 
-function spawnWindow() {
-    for (let i = 0; i < 3; i++) {
-        const w = document.createElement("div");
-        w.className = "window";
-        w.style.left = Math.random() * (window.innerWidth - 260) + "px";
-        w.style.top = Math.random() * (window.innerHeight - 140) + "px";
+function spawnWindows() {
+    for (let i = 0; i < 4; i++) {
+        const div = document.createElement("div");
+        div.className = "win";
+        div.innerHTML = `<div class="bar">SYSTEM</div>ERROR ${Math.floor(Math.random()*999999)}`;
 
-        w.innerHTML = `
-            <div class="bar">SYSTEM</div>
-            ERROR 0x${Math.floor(Math.random()*999999)}
-            <br>DO NOT CLOSE
-        `;
+        const obj = {
+            el: div,
+            x: Math.random() * window.innerWidth,
+            y: Math.random() * window.innerHeight,
+            vx: (Math.random()*12 + 4) * (Math.random()<0.5?-1:1),
+            vy: (Math.random()*12 + 4) * (Math.random()<0.5?-1:1),
+            osc: createSound()
+        };
 
-        document.body.appendChild(w);
+        windows.push(obj);
+        document.body.appendChild(div);
     }
 }
 
-function moveWindows() {
-    document.querySelectorAll(".window").forEach(w => {
-        const x = w.offsetLeft + (Math.random()*20 - 10);
-        const y = w.offsetTop + (Math.random()*20 - 10);
-        w.style.left = x + "px";
-        w.style.top = y + "px";
-    });
+function createSound() {
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+
+    osc.type = ["sawtooth","square","triangle"][Math.floor(Math.random()*3)];
+    osc.frequency.value = 200 + Math.random()*1800;
+    gain.gain.value = 0.15 + Math.random()*0.2;
+
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+
+    // losowe pitch‑shifty
+    setInterval(() => {
+        osc.frequency.value = 100 + Math.random()*3000;
+    }, 200 + Math.random()*400);
+
+    return osc;
 }
 
-// trap exit
+function update() {
+    for (const w of windows) {
+        w.x += w.vx;
+        w.y += w.vy;
+
+        if (w.x < 0 || w.x > window.innerWidth - 180) w.vx *= -1;
+        if (w.y < 0 || w.y > window.innerHeight - 100) w.vy *= -1;
+
+        w.el.style.left = w.x + "px";
+        w.el.style.top = w.y + "px";
+    }
+}
+
+// blokada ucieczki
 window.onbeforeunload = () => "NOPE";
 </script>
 
