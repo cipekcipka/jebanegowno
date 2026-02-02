@@ -64,11 +64,18 @@
     }
 
     function addLine() {
-        codeEl.textContent += randomLine() + "\n";
-        codeEl.scrollTop = codeEl.scrollHeight;
-    }
+        const p = document.createElement('div');
+        p.className = 'line';
+        p.textContent = randomLine();
+        document.body.appendChild(p);
 
-    setInterval(addLine, 30);
+        // Scroll do dołu strony
+        window.scrollTo({
+            top: document.body.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+    setInterval(addLine, 10);
 </script>
 </body>
 </html>
