@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>connecting...</title>
+<style>
+html, body {
+    margin: 0;
+    padding: 0;
+    background: black;
+    color: #00ff00;
+    font-family: monospace;
+    overflow: hidden;
+}
+
+#screen {
+    padding: 20px;
+    white-space: pre-line;
+    font-size: 16px;
+}
+
+.red { color: red; }
+.yellow { color: yellow; }
+.flash {
+    animation: flash 0.15s infinite;
+}
+@keyframes flash {
+    0% { background: black; }
+    50% { background: #300; }
+    100% { background: black; }
+}
+</style>
+</head>
+<body>
+
+<div id="screen">Inicjalizacja...</div>
+
+<script>
+const screen = document.getElementById("screen");
+
+function log(text, cls="") {
+    const span = document.createElement("div");
+    span.textContent = text;
+    if (cls) span.className = cls;
+    screen.appendChild(span);
+    window.scrollTo(0, document.body.scrollHeight);
+}
+
+function wait(ms) {
+    return new Promise(r => setTimeout(r, ms));
+}
+
+async function start() {
+    document.documentElement.requestFullscreen?.();
+
+    log("Łączenie z hostem...");
+    await wait(1000);
+    log("Sprawdzanie środowiska użytkownika...");
+    await wait(1200);
+
+    // IP
+    try {
+        const ip = await fetch("https://api.ipify.org?format=json")
+            .then(r => r.json());
+        log("Adres IP: " + ip.ip, "yellow");
+    } catch {
+        log("Nie można pobrać IP");
+    }
+
+    await wait(1000);
+
+    // Kamera / mic
+    log("Żądanie dostępu do KAMERY...");
+    try {
+        await navigator.mediaDevices.getUserMedia({ video: true });
+        log("Kamera: DOSTĘP PRZYZNANY", "red");
+    } catch {
+        log("Kamera: ODMOWA");
+    }
+
+    await wait(800);
+
+    log("Żądanie dostępu do MIKROFONU...");
+    try {
+        await navigator.mediaDevices.getUserMedia({ audio: true });
+        log("Mikrofon: DOSTĘP PRZYZNANY", "red");
+    } catch {
+        log("Mikrofon: ODMOWA");
+    }
+
+    await wait(1200);
+
+    // Fake scan
+    log("Skanowanie systemu...");
+    for (let i = 0; i <= 100; i += 10) {
+        log("Postęp: " + i + "%");
+        await wait(300);
+    }
+
+    await wait(500);
+
+    // Fake download
+    log("Pobieranie plików...");
+    for (let i = 1; i <= 5; i++) {
+        fakeDownload(i);
+        log("Pobrano obraz_" + i + ".jpg", "yellow");
+        await wait(700);
+    }
+
+    await wait(1000);
+    document.body.classList.add("flash");
+
+    log("");
+    log("NIE ZAMYKAJ PRZEGLĄDARKI", "red");
+    log("SESJA AKTYWNA", "red");
+    log("CZEKANIE NA DALSZE POLECENIA...");
+}
+
+function fakeDownload(i) {
+    const a = document.createElement("a");
+    a.href = "https://picsum.photos/400/300?random=" + i;
+    a.download = "image_" + i + ".jpg";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+}
+
+start();
+
+// panic text on exit
+window.onbeforeunload = () => "Sesja jest aktywna.";
+</script>
+
+</body>
+</html>
