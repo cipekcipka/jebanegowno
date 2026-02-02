@@ -69,11 +69,8 @@
         p.textContent = randomLine();
         document.body.appendChild(p);
 
-        // Scroll do dołu strony
-        window.scrollTo({
-            top: document.body.scrollHeight,
-            behavior: 'smooth'
-        });
+        // Scroll do dołu strony – bez smooth
+        window.scrollTo(0, document.body.scrollHeight);
     }
     setInterval(addLine, 10);
 </script>
